@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Unity.Android.Gradle;
 using UnityEngine;
 using UnityEngine.Events;
@@ -23,6 +25,9 @@ public class InputManager : MonoBehaviour
     private float touchStartTime;
     private bool isPressing;
     private bool isHoldingHandled;
+
+    public List<string> actions;
+
 
     // Thresholds
     [SerializeField] private float swipeDistanceThreshold = 50f; // pixels

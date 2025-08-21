@@ -16,6 +16,9 @@ public class aiBehaviour : MonoBehaviour
     string[] defendActionNames = {"Punch", "LeftHook", "RightHook"};
 
 
+    private float aiResponsiveness = 1 , DiffcultyMultiplier =1f;
+    private float aiBaseDamage = 10, aiBaseHealth = 100;
+
 
 
     void Awake()
@@ -33,6 +36,9 @@ public class aiBehaviour : MonoBehaviour
             return;
         }
 
+        DiffcultyMultiplier = GameManager.difficulty;
+        setDifficultyMultiplier(DiffcultyMultiplier);
+
         botAttackMoves = new List<Action>
         {
             botController.Punch,
@@ -48,41 +54,35 @@ public class aiBehaviour : MonoBehaviour
         };
     }
 
+
     void Start()
     {
-        // StartCoroutine(AIBehaviourLoop());
-        // StartCoroutine(AIBehaviourLoopTesting());
+        StartCoroutine(AIBehaviourLoop());
     }
 
 
-    private System.Collections.IEnumerator AIBehaviourLoopTesting()
-    {
-        Debug.Log("AI Behaviour Loop started");
-        while (true)
-        {
-            yield return new WaitForSeconds(turnTime);
-            if (playerController != null)
-            {
-                botController.DodgeRight();
-            }
-            else
-            {
-                Debug.LogWarning("no playerController found, cannot decide move.");
-            }
-        }
-    }
+    // private System.Collections.IEnumerator AIBehaviourLoopTesting()
+    // {
+    //     Debug.Log("AI Behaviour Loop started");
+    //     while (true)
+    //     {
+    //         yield return new WaitForSeconds(turnTime);
+    //         if (playerController != null)
+    //         {
+    //             botController.DodgeRight();
+    //         }
+    //         else
+    //         {
+    //             Debug.LogWarning("no playerController found, cannot decide move.");
+    //         }
+    //     }
+    // }
+
     private System.Collections.IEnumerator AIBehaviourLoop()
     {
         Debug.Log("AI Behaviour Loop started");
         while (true)
         {
-            if (botController.characterAnimator.GetBool("isPunching"))
-            {
-                Debug.Log("AI is currently performing an action, waiting for next turn.");
-                yield return new WaitForSeconds(turnTime);
-                continue;
-            }
-
             yield return new WaitForSeconds(turnTime);
             if (playerController != null)
             {
@@ -99,7 +99,7 @@ public class aiBehaviour : MonoBehaviour
         }
     }
 
-    private void decideAttackMove()
+    public void decideAttackMove()
     {
         int actionNum = getActionNum(playerController.playerActions, attackActionNames);
         if (actionNum >= 0 && actionNum < botAttackMoves.Count)
@@ -120,7 +120,7 @@ public class aiBehaviour : MonoBehaviour
         }
     }
 
-    private int getActionNum(List<string> actions, string[] actionNames)
+     private int getActionNum(List<string> actions, string[] actionNames)
     {
         int actionCount = actionNames.Length;
         int[] weights = new int[actionCount];
@@ -140,7 +140,8 @@ public class aiBehaviour : MonoBehaviour
         int maxWeight = playerActionsHistoryLength > 0 ? playerActionsHistoryLength : 1;
         for (int i = 0; i < actionCount; i++)
         {
-            weights[i] = maxWeight - weights[i] + 1;
+            int rawWeight = maxWeight - weights[i] + 1;
+            weights[i] = (int)Mathf.Pow(rawWeight, aiResponsiveness);
         }
 
         int totalWeight = 0;
@@ -159,4 +160,9 @@ public class aiBehaviour : MonoBehaviour
         return UnityEngine.Random.Range(0, actionCount);
     }
 
+    public void setDifficultyMultiplier(float aiGeneralDiffcultyMultiplier)
+    {
+        botController.playerHealth = aiBaseHealth * aiGeneralDiffcultyMultiplier;
+        botController.playerDamage = aiBaseDamage * aiGeneralDiffcultyMultiplier;
+    }
 }

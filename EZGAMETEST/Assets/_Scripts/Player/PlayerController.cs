@@ -1,7 +1,9 @@
 using System.Collections.Generic;
-using Unity.Android.Gradle.Manifest;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -11,9 +13,16 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private PlayerController target;
 
-    public int playerHealth = 100;
-    public float playerSpeed = 5f;
+    public float playerHealth = 100;
+    public float playerDamage = 10;
 
+    [SerializeField] private TextMeshProUGUI healthText;
+
+
+    void Awake()
+    {
+        healthText.text = $"Health: {playerHealth}";
+    }
     public void Punch()
     {
         playerActions.Add("Punch");
@@ -68,6 +77,18 @@ public class PlayerController : MonoBehaviour
         return true;
     }
 
+    public void TakeDamage(int damage)
+    {
+        playerHealth-= damage;
+        Debug.Log($"{gameObject.name} took {damage} damage. Health is now {playerHealth}.");
+        characterAnimator.SetTrigger("hitReactionTrigger");
+        healthText.text = $"Health: {playerHealth}";
+        if (playerHealth <= 0)
+        {
+            SceneManager.LoadScene("MainMenu");
+        }
+    }
+
     public void setPunchState(string boolName)
     {
         characterAnimator.SetBool(boolName, true);
@@ -76,6 +97,7 @@ public class PlayerController : MonoBehaviour
         if (canHit(target))
         {
             Debug.Log($"{gameObject.name} hit {target.gameObject.name}!");
+            target.TakeDamage((int)playerDamage);
         }
         else
         {

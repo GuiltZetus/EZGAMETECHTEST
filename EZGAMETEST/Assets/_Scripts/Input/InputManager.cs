@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Unity.Android.Gradle;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
@@ -123,17 +122,14 @@ public class InputManager : MonoBehaviour
 
             if (touchX < screenWidth / 3)
             {
-                Debug.Log("Tap action detected on the LEFT side of the screen.");
                 OnLeftTapEvent.Invoke();
             }
             else if (touchX > screenWidth * 2 / 3)
             {
-                Debug.Log("Tap action detected on the RIGHT side of the screen.");
                 OnRightTapEvent.Invoke();
             }
             else
             {
-                Debug.Log("Tap action detected on the MIDDLE of the screen.");
                 OnMiddleTapEvent.Invoke();
             }
             isPressing = false;

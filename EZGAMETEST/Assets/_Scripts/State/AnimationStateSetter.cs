@@ -1,10 +1,10 @@
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 public class AnimationStateSetter : StateMachineBehaviour
 {
     public string booleanParameterName;
     public string booleanParameterAntiSpam;
-
 
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {

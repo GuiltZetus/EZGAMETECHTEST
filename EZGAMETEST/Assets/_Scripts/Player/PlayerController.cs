@@ -9,9 +9,20 @@ public class PlayerController : MonoBehaviour
 
     public List<string> playerActions;
 
+    [SerializeField] private PlayerController target;
+
+    public bool isDodging;
+
     public void Punch()
     {
-        Debug.Log($"Punch action performed on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}, GameObject active: {characterAnimator.gameObject.activeInHierarchy}");
+        if (canHit(target))
+        {
+            Debug.Log($"{gameObject.name} punch {target.gameObject.name}");
+        }
+        else
+        {
+            Debug.Log($"{gameObject.name} punch missed {target.gameObject.name}");
+        }
         characterAnimator.SetTrigger("straightJabTrigger");
 
         playerActions.Add("Punch");
@@ -35,13 +46,32 @@ public class PlayerController : MonoBehaviour
     public void Block()
     {
         Debug.Log($"Block action performed on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}, GameObject active: {characterAnimator.gameObject.activeInHierarchy}");
-        Debug.Log("Block action performed");
 
         playerActions.Add("Block");
+    }
+
+    public void dodgeStateChange()
+    {
+        isDodging = !isDodging;
+        Debug.Log($"Dodge state changed to {isDodging} on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}");
+    }
+
+    public bool canHit(PlayerController target)
+    {
+        if (target.isDodging == false)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     private void OnDisable()
     {
         Debug.Log($"{gameObject.name} DISABLED at {Time.time}\n{System.Environment.StackTrace}");
     }
+
+    
 }

@@ -5,9 +5,11 @@ using UnityEngine;
 public class aiBehaviour : MonoBehaviour
 {
     private PlayerController botController;
-    private PlayerController playerController;
+    [SerializeField] private PlayerController playerController;
 
     private List<Action> botMoves;
+
+    private float turnTime = 2f; //seconds 
 
     GameObject playerObj;
 
@@ -21,6 +23,11 @@ public class aiBehaviour : MonoBehaviour
         }
 
         playerObj = GameObject.Find("Player");
+        if(playerController == null)
+        {
+            Debug.LogError("PlayerController component not found on the Player object.");
+            return;
+        }
 
         playerController = playerObj.GetComponent<PlayerController>();
 
@@ -31,8 +38,50 @@ public class aiBehaviour : MonoBehaviour
             botController.DodgeRight,
             botController.Block
         };
+    }
 
-        decideMove();
+    void Start()
+    {
+        StartCoroutine(AIBehaviourLoop());
+        // StartCoroutine(AIBehaviourLoopTesting());
+    }
+
+
+    private System.Collections.IEnumerator AIBehaviourLoopTesting()
+    {
+        Debug.Log("AI Behaviour Loop started");
+        while (true)
+        {
+            yield return new WaitForSeconds(turnTime);
+            if (playerController != null)
+            {
+                botController.DodgeLeft();
+            }
+            else
+            {
+                Debug.LogWarning("no playerController found, cannot decide move.");
+            }
+        }
+    }
+    private System.Collections.IEnumerator AIBehaviourLoop()
+    {
+        Debug.Log("AI Behaviour Loop started");
+        while (true)
+        {
+            yield return new WaitForSeconds(turnTime);
+            if (playerController != null)
+            {
+                decideMove();
+            }
+            else if (playerController == null)
+            {
+                Debug.LogWarning("no playerController found, cannot decide move.");
+            }
+            else if (playerController.playerActions.Count == 0)
+            {
+                Debug.LogWarning("No player actions to base AI decision on.");
+            }
+        }
     }
 
     private void decideMove()
@@ -50,9 +99,9 @@ public class aiBehaviour : MonoBehaviour
         int actionCount = actionNames.Length;
         int[] weights = new int[actionCount];
 
-        // Look at the last 10 actions
-        int historyLength = Mathf.Min(10, actions.Count);
-        for (int i = actions.Count - historyLength; i < actions.Count; i++)
+        int playerActionsHistoryLength = Mathf.Min(10, actions.Count);
+
+        for (int i = actions.Count - playerActionsHistoryLength; i < actions.Count; i++)
         {
             string act = actions[i];
             for (int j = 0; j < actionCount; j++)
@@ -62,7 +111,7 @@ public class aiBehaviour : MonoBehaviour
             }
         }
 
-        int maxWeight = historyLength > 0 ? historyLength : 1;
+        int maxWeight = playerActionsHistoryLength > 0 ? playerActionsHistoryLength : 1;
         for (int i = 0; i < actionCount; i++)
         {
             weights[i] = maxWeight - weights[i] + 1; 

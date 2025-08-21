@@ -7,33 +7,39 @@ public class aiBehaviour : MonoBehaviour
     private PlayerController botController;
     [SerializeField] private PlayerController playerController;
 
-    private List<Action> botMoves;
+    private List<Action> botAttackMoves, botDefendMoves;
 
     private float turnTime = 2f; //seconds 
 
     GameObject playerObj;
+    string[] attackActionNames = { "DodgeLeft", "DodgeRight", "Block"};
+    string[] defendActionNames = {"Punch", "LeftHook", "RightHook"};
+
 
     void Awake()
     {
         botController = GetComponent<PlayerController>();
-        if(botController == null)
+        if (botController == null)
         {
             Debug.LogError("PlayerController component not found on the bot object.");
             return;
         }
 
-        playerObj = GameObject.Find("Player");
-        if(playerController == null)
+        if (playerController == null)
         {
             Debug.LogError("PlayerController component not found on the Player object.");
             return;
         }
 
-        playerController = playerObj.GetComponent<PlayerController>();
-
-        botMoves = new List<Action>
+        botAttackMoves = new List<Action>
         {
             botController.Punch,
+            botController.leftHook,
+            botController.rightHook
+        };
+
+        botDefendMoves = new List<Action>
+        {
             botController.DodgeLeft,
             botController.DodgeRight,
             botController.Block
@@ -68,10 +74,17 @@ public class aiBehaviour : MonoBehaviour
         Debug.Log("AI Behaviour Loop started");
         while (true)
         {
+            if (botController.isPunching)
+            {
+                Debug.Log("AI is currently performing an action, waiting for next turn.");
+                yield return new WaitForSeconds(turnTime);
+                continue;
+            }
+
             yield return new WaitForSeconds(turnTime);
             if (playerController != null)
             {
-                decideMove();
+                // decideAttackMove();
             }
             else if (playerController == null)
             {
@@ -84,18 +97,29 @@ public class aiBehaviour : MonoBehaviour
         }
     }
 
-    private void decideMove()
+    private void decideAttackMove()
     {
-        int actionNum = getActionNum(playerController.playerActions);
-        if (actionNum >= 0 && actionNum < botMoves.Count)
+        int actionNum = getActionNum(playerController.playerActions, attackActionNames);
+        if (actionNum >= 0 && actionNum < botAttackMoves.Count)
         {
-            botMoves[actionNum]?.Invoke();
+            botAttackMoves[actionNum]?.Invoke();
         }
     }
 
-    private int getActionNum(List<string> actions)
+    public void decideDodge()
     {
-        string[] actionNames = { "Punch", "DodgeLeft", "DodgeRight", "Block" };
+        if (!playerController.isPunching)
+        {
+            int actionNum = getActionNum(playerController.playerActions, defendActionNames);
+            if (actionNum >= 0 && actionNum < botDefendMoves.Count)
+            {
+                botDefendMoves[actionNum]?.Invoke();
+            }
+        }
+    }
+
+    private int getActionNum(List<string> actions, string[] actionNames)
+    {
         int actionCount = actionNames.Length;
         int[] weights = new int[actionCount];
 
@@ -114,7 +138,7 @@ public class aiBehaviour : MonoBehaviour
         int maxWeight = playerActionsHistoryLength > 0 ? playerActionsHistoryLength : 1;
         for (int i = 0; i < actionCount; i++)
         {
-            weights[i] = maxWeight - weights[i] + 1; 
+            weights[i] = maxWeight - weights[i] + 1;
         }
 
         int totalWeight = 0;
@@ -132,4 +156,5 @@ public class aiBehaviour : MonoBehaviour
 
         return UnityEngine.Random.Range(0, actionCount);
     }
+
 }

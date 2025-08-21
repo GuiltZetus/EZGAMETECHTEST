@@ -7,7 +7,9 @@ using UnityEngine.InputSystem;
 
 public class InputManager : MonoBehaviour
 {
-    public UnityEvent OnTapEvent;
+    public UnityEvent OnMiddleTapEvent;
+    public UnityEvent OnRightTapEvent;
+    public UnityEvent OnLeftTapEvent;
     public UnityEvent OnHoldEvent;
     public UnityEvent OnSwipeEvent;
     public UnityEvent OnSwipeLeftEvent;
@@ -25,8 +27,6 @@ public class InputManager : MonoBehaviour
     private float touchStartTime;
     private bool isPressing;
     private bool isHoldingHandled;
-
-    public List<string> actions;
 
 
     // Thresholds
@@ -100,12 +100,12 @@ public class InputManager : MonoBehaviour
             {
                 if (horizontal > 0)
                 {
-                    Debug.Log("Swipe Right detected");
+                    // Debug.Log("Swipe Right detected");
                     OnSwipeRightEvent.Invoke();
                 }
                 else
                 {
-                    Debug.Log("Swipe Left detected");
+                    // Debug.Log("Swipe Left detected");
                     OnSwipeLeftEvent.Invoke();
                 }
             }
@@ -118,8 +118,24 @@ public class InputManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("Tap action detected");
-            OnTapEvent.Invoke();
+            float screenWidth = Screen.width;
+            float touchX = touchEndPos.x;
+
+            if (touchX < screenWidth / 3)
+            {
+                Debug.Log("Tap action detected on the LEFT side of the screen.");
+                OnLeftTapEvent.Invoke();
+            }
+            else if (touchX > screenWidth * 2 / 3)
+            {
+                Debug.Log("Tap action detected on the RIGHT side of the screen.");
+                OnRightTapEvent.Invoke();
+            }
+            else
+            {
+                Debug.Log("Tap action detected on the MIDDLE of the screen.");
+                OnMiddleTapEvent.Invoke();
+            }
             isPressing = false;
         }
     }

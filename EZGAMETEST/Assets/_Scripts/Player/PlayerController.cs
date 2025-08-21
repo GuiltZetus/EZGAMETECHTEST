@@ -11,13 +11,16 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private PlayerController target;
 
-    public bool isDodging;
+    public bool isDodging, isPunching;
+
+    public int health = 100;
 
     public void Punch()
     {
         if (canHit(target))
         {
             Debug.Log($"{gameObject.name} punch {target.gameObject.name}");
+            playerActions.Add("Punch");
         }
         else
         {
@@ -25,19 +28,46 @@ public class PlayerController : MonoBehaviour
         }
         characterAnimator.SetTrigger("straightJabTrigger");
 
-        playerActions.Add("Punch");
+    }
+
+    public void leftHook()
+    {
+        if (canHit(target))
+        {
+            Debug.Log($"{gameObject.name} left hook {target.gameObject.name}");
+            playerActions.Add("LeftHook");
+        }
+        else
+        {
+            Debug.Log($"{gameObject.name} left hook missed {target.gameObject.name}");
+        }
+        characterAnimator.SetTrigger("leftHookTrigger");
+    }
+
+    public void rightHook()
+    {
+        if (canHit(target))
+        {
+            Debug.Log($"{gameObject.name} right hook {target.gameObject.name}");
+            playerActions.Add("RightHook");
+        }
+        else
+        {
+            Debug.Log($"{gameObject.name} right hook missed {target.gameObject.name}");
+        }
+        characterAnimator.SetTrigger("rightHookTrigger");
     }
 
     public void DodgeRight()
     {
-        Debug.Log($"Dodge right action performed on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}, GameObject active: {characterAnimator.gameObject.activeInHierarchy}");
+        // Debug.Log($"Dodge right action performed on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}, GameObject active: {characterAnimator.gameObject.activeInHierarchy}");
         characterAnimator.SetTrigger("dodgeRightTrigger");
 
         playerActions.Add("DodgeRight");
     }
     public void DodgeLeft()
     {
-        Debug.Log($"Dodge left action performed on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}, GameObject active: {characterAnimator.gameObject.activeInHierarchy}");
+        // Debug.Log($"Dodge left action performed on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}, GameObject active: {characterAnimator.gameObject.activeInHierarchy}");
         characterAnimator.SetTrigger("dodgeLeftTrigger");
 
         playerActions.Add("DodgeLeft");
@@ -53,14 +83,24 @@ public class PlayerController : MonoBehaviour
     public void dodgeStateChange()
     {
         isDodging = !isDodging;
-        Debug.Log($"Dodge state changed to {isDodging} on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}");
+        // Debug.Log($"Dodge state changed to {isDodging} on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}");
+    }
+
+    public void punchStateChange()
+    {
+        isPunching = !isPunching;
+        // Debug.Log($"Punch state changed to {isPunching} on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}");
     }
 
     public bool canHit(PlayerController target)
     {
-        if (target.isDodging == false)
+        if (isPunching && target.isDodging)
         {
-            return true;
+            return false;
+        }
+        else if (target.isDodging)
+        {
+            return false;
         }
         else
         {

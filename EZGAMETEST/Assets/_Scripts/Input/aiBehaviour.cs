@@ -16,6 +16,8 @@ public class aiBehaviour : MonoBehaviour
     string[] defendActionNames = {"Punch", "LeftHook", "RightHook"};
 
 
+
+
     void Awake()
     {
         botController = GetComponent<PlayerController>();
@@ -42,13 +44,13 @@ public class aiBehaviour : MonoBehaviour
         {
             botController.DodgeLeft,
             botController.DodgeRight,
-            botController.Block
+            // botController.Block
         };
     }
 
     void Start()
     {
-        StartCoroutine(AIBehaviourLoop());
+        // StartCoroutine(AIBehaviourLoop());
         // StartCoroutine(AIBehaviourLoopTesting());
     }
 
@@ -61,7 +63,7 @@ public class aiBehaviour : MonoBehaviour
             yield return new WaitForSeconds(turnTime);
             if (playerController != null)
             {
-                botController.DodgeLeft();
+                botController.DodgeRight();
             }
             else
             {
@@ -74,7 +76,7 @@ public class aiBehaviour : MonoBehaviour
         Debug.Log("AI Behaviour Loop started");
         while (true)
         {
-            if (botController.isPunching)
+            if (botController.characterAnimator.GetBool("isPunching"))
             {
                 Debug.Log("AI is currently performing an action, waiting for next turn.");
                 yield return new WaitForSeconds(turnTime);
@@ -84,7 +86,7 @@ public class aiBehaviour : MonoBehaviour
             yield return new WaitForSeconds(turnTime);
             if (playerController != null)
             {
-                // decideAttackMove();
+                decideAttackMove();
             }
             else if (playerController == null)
             {
@@ -108,7 +110,7 @@ public class aiBehaviour : MonoBehaviour
 
     public void decideDodge()
     {
-        if (!playerController.isPunching)
+        if (!playerController.characterAnimator.GetBool("isDodging") && !playerController.characterAnimator.GetBool("isPunching"))
         {
             int actionNum = getActionNum(playerController.playerActions, defendActionNames);
             if (actionNum >= 0 && actionNum < botDefendMoves.Count)

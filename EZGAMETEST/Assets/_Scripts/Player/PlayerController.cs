@@ -11,50 +11,25 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private PlayerController target;
 
-    public bool isDodging, isPunching;
-
-    public int health = 100;
+    public int playerHealth = 100;
+    public float playerSpeed = 5f;
 
     public void Punch()
     {
-        if (canHit(target))
-        {
-            Debug.Log($"{gameObject.name} punch {target.gameObject.name}");
-            playerActions.Add("Punch");
-        }
-        else
-        {
-            Debug.Log($"{gameObject.name} punch missed {target.gameObject.name}");
-        }
+        playerActions.Add("Punch");
         characterAnimator.SetTrigger("straightJabTrigger");
 
     }
 
     public void leftHook()
     {
-        if (canHit(target))
-        {
-            Debug.Log($"{gameObject.name} left hook {target.gameObject.name}");
-            playerActions.Add("LeftHook");
-        }
-        else
-        {
-            Debug.Log($"{gameObject.name} left hook missed {target.gameObject.name}");
-        }
+        playerActions.Add("LeftHook");
         characterAnimator.SetTrigger("leftHookTrigger");
     }
 
     public void rightHook()
     {
-        if (canHit(target))
-        {
-            Debug.Log($"{gameObject.name} right hook {target.gameObject.name}");
-            playerActions.Add("RightHook");
-        }
-        else
-        {
-            Debug.Log($"{gameObject.name} right hook missed {target.gameObject.name}");
-        }
+        playerActions.Add("RightHook");
         characterAnimator.SetTrigger("rightHookTrigger");
     }
 
@@ -62,51 +37,54 @@ public class PlayerController : MonoBehaviour
     {
         // Debug.Log($"Dodge right action performed on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}, GameObject active: {characterAnimator.gameObject.activeInHierarchy}");
         characterAnimator.SetTrigger("dodgeRightTrigger");
-
         playerActions.Add("DodgeRight");
     }
     public void DodgeLeft()
     {
         // Debug.Log($"Dodge left action performed on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}, GameObject active: {characterAnimator.gameObject.activeInHierarchy}");
         characterAnimator.SetTrigger("dodgeLeftTrigger");
-
         playerActions.Add("DodgeLeft");
     }
 
-    public void Block()
-    {
-        Debug.Log($"Block action performed on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}, GameObject active: {characterAnimator.gameObject.activeInHierarchy}");
+    // public void Block()
+    // {
+    //     Debug.Log($"Block action performed on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}, GameObject active: {characterAnimator.gameObject.activeInHierarchy}");
 
-        playerActions.Add("Block");
-    }
-
-    public void dodgeStateChange()
-    {
-        isDodging = !isDodging;
-        // Debug.Log($"Dodge state changed to {isDodging} on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}");
-    }
-
-    public void punchStateChange()
-    {
-        isPunching = !isPunching;
-        // Debug.Log($"Punch state changed to {isPunching} on {gameObject.name}, Animator assigned: {characterAnimator != null}, Controller: {characterAnimator?.runtimeAnimatorController}, Animator enabled: {characterAnimator.enabled}");
-    }
+    //     playerActions.Add("Block");
+    // }
 
     public bool canHit(PlayerController target)
     {
-        if (isPunching && target.isDodging)
+        if (target.characterAnimator.GetBool("isDodgingLeft") && (characterAnimator.GetBool("isPunchingLeft") || characterAnimator.GetBool("isPunchingMiddle")))
         {
+            Debug.Log($"{gameObject.name} cannot hit {target.gameObject.name} because they are dodging left");
             return false;
         }
-        else if (target.isDodging)
+        if (target.characterAnimator.GetBool("isDodgingRight") && (characterAnimator.GetBool("isPunchingRight") || characterAnimator.GetBool("isPunchingMiddle")))
         {
+            Debug.Log($"{gameObject.name} cannot hit {target.gameObject.name} because they are dodging Right");
             return false;
+        }
+        return true;
+    }
+
+    public void setPunchState(string boolName)
+    {
+        characterAnimator.SetBool(boolName, true);
+        characterAnimator.SetBool("isPunching", true);
+
+        if (canHit(target))
+        {
+            Debug.Log($"{gameObject.name} hit {target.gameObject.name}!");
         }
         else
         {
-            return false;
+            Debug.Log($"{gameObject.name} punch missed {target.gameObject.name}!");
         }
     }
+
+
+    
 
     private void OnDisable()
     {
